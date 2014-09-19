@@ -1,0 +1,25 @@
+body{
+    background: black;
+}
+.cell{
+    float: left;
+    height: 3px;
+    width: 3px;
+    /*border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;*/
+}
+.cell.active{
+    background: white;
+}
+/*.row0 .cell{
+    border-top: 1px solid #ccc;
+}
+.cell:first-child{
+    border-left: 1px solid #ccc;
+}*/
+
+.row:after{
+    content: '';
+    display: block;
+    clear: both;
+}
