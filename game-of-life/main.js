@@ -1,6 +1,5 @@
 $(function () {
     var game = $('#game');
-    var state = [];
 
     function buildRow(i) {
         game.append('<div class="row row' + i + '"></div>');
@@ -35,11 +34,7 @@ $(function () {
             arr[i] = [];
             var j = 0;
             $(this).find('.cell').each(function () {
-                if ($(this).hasClass('active')) {
-                    arr[i][j] = true;
-                } else {
-                    arr[i][j] = false;
-                }
+                arr[i][j] = ($(this).hasClass('active'));
                 j++;
             });
             i++;
