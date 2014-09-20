@@ -126,8 +126,27 @@ $(function () {
         this.render(state);
         this.state=state;
     };
+    Game.prototype.send = function(){
+        if (!this.isTableSet) {alert('поле не задано')} else {
+            var jsonString = JSON.stringify(this.state);
+            var name = $('#name').val();
+            $.post('write.php', {name: name, arr: jsonString});
+        }
+    };
+    Game.prototype.get = function(){
+        if (!this.isTableSet) this.createTable();
+        var name = $('#name').val();
+        var game = this;
+        $.post('read.php',{name: name},function(data){
+            var state=JSON.parse(data);
+            game.render(state);
+            game.state = state;
+            game.isGameGoing = false;
+        });
 
-    game = new Game(300, 300, 0);
+    };
+
+    game = new Game(100, 100, 0);
 
     $('#makeTable').click(function () {
         game.createTable();
@@ -144,5 +163,11 @@ $(function () {
     $('#clear').click(function(){
         game.clear();
     });
+    $('#send').click(function(){
+        game.send();
+    });
+    $('#get').click(function(){
+        game.get();
+    })
 
 });
