@@ -1,38 +1,46 @@
 $(function () {
+    'use strict';
     var Game, game;
 
-    Game = function (x, y) {
+    Game = function (x, y, speed) {
         this.sizeX = +x;
         this.sizeY = +y;
         this.state = new Array(this.sizeX);
-        var objArr = new Array(this.sizeX);
-        this.next = new Array(this.sizeX);
+        this.isTableSet = false;
+        this.objArr = new Array(this.sizeX);
+        this.neght = new Array(this.sizeX);
+        this.isGameGoing = false;
+
         for (var i = 0; i < this.sizeX; i++) {
             this.state[i] = new Array(this.sizeY);
-            objArr[i] = new Array(this.sizeY);
-            this.next[i] = new Array(this.sizeY);
+            this.neght[i] = new Array(this.sizeY);
+
+            this.objArr[i] = new Array(this.sizeY);
             for (var j = 0; j < this.sizeY; j++) {
                 this.state[i][j] = false;
-                this.next[i][j] = false;
+                this.neght[i][j] = 1;
+
             }
         }
-        this.objArr = objArr;
+        var game = this;
+        setInterval(function(){
+            if(game.isGameGoing){
+                game.nextState();
+            }
+        },speed);
     };
     Game.prototype.wrapper = $('#game');
     Game.prototype.createTable = function () {
         var game = this, i, j;
-        for (i = 0; i < game.sizeY; i++) {
-            this.wrapper.append('<div class="row row' + i + '"></div>');
-
+        for (i = 0; i < game.sizeX; i++) {
+            this.wrapper.append('<div class="r"></div>');
         }
         var rowCount = 0;
 
-        $('.row').each(function () {
-            var rowCells = '';
-            for (j = 0; j < game.sizeX; j++) {
-                rowCells += '<div class="cell" id="c_' + rowCount + '_' + j + '"></div>';
+        $('.r').each(function () {
+            for (j = 0; j < game.sizeY; j++) {
+                $(this).append('<div class="c" id="c_' + rowCount + '_' + j + '"></div>');
             }
-            $(this).append(rowCells);
             rowCount++;
         });
         for (i = 0; i < game.sizeX; i++) {
@@ -40,179 +48,101 @@ $(function () {
                 game.objArr[i][j] = $('#c_' + i + '_' + j);
             }
         }
-        console.log(game.objArr);
-        $('.cell').click(function () {
-            $(this).toggleClass('active');
+        $('.c').click(function () {
+            $(this).toggleClass('a');
             var arr = $(this).attr('id').split("_");
             game.state[arr[1]][arr[2]] = (game.state[arr[1]][arr[2]] ? false : true);
         });
+        this.isTableSet = true;
     };
     Game.prototype.nextState = function () {
         var next = [];
-        var i = 0;
+        var i, j, k, m;
         for (i = 0; i < this.sizeX; i++) {
             next[i] = [];
-            for (var j = 0; j < this.sizeY; j++) {
-                var neighCount = 0;
-                for (var k = i - 1; k <= i + 1; k++) {
+            for (j = 0; j < this.sizeY; j++) {
+
+                this.neght[i][j] = 0;
+                for (k = i - 1; k <= i + 1; k++) {
                     if (k >= 0 && k < this.sizeX) {
-                        for (var m = j - 1; m <= j + 1; m++) {
+                        for (m = j - 1; m <= j + 1; m++) {
                             if (m >= 0 && m < this.sizeY) {
-                                if (this.state[k][m]) neighCount++;
+                                if (this.state[k][m]) this.neght[i][j]++;
                             }
                         }
                     }
                 }
                 if (this.state[i][j]) {
-                    neighCount--;
-                    next[i][j] = (neighCount == 3 || neighCount == 2);
+                    next[i][j] = (this.neght[i][j] == 3 || this.neght[i][j] == 4);
                 } else {
-                    next[i][j] = (neighCount == 3);
+                    next[i][j] = (this.neght[i][j] == 3);
                 }
             }
         }
         this.render(next);
-
-
         this.state = next;
 
     };
     Game.prototype.render = function (next) {
+        this.isGameGoing = false;
         for (var x = 0; x < this.sizeX; x++) {
             for (var y = 0; y < this.sizeY; y++) {
                 if (next[x][y] != this.state[x][y]) {
+                    this.isGameGoing = true;
                     if (next[x][y]) {
-                        this.objArr[x][y].addClass('active');
+                        this.objArr[x][y].addClass('a');
                     } else {
-                        this.objArr[x][y].removeClass('active');
+                        this.objArr[x][y].removeClass('a');
                     }
                 }
             }
         }
     };
+    Game.prototype.random = function () {
+        if (!this.isTableSet) this.createTable();
+        for (var i = 0; i < this.sizeX; i++) {
+            for (var j = 0; j < this.sizeY; j++) {
+                if (Math.random() > .7) {
+                    this.state[i][j] = true;
+                    this.objArr[i][j].addClass('a');
+                }
+            }
+        }
+    };
+    Game.prototype.stop = function () {
+        this.isGameGoing = false;
+    };
+    Game.prototype.start = function(){
+        this.isGameGoing = true;
+    };
+    Game.prototype.clear = function(){
+        var state = [];
+        for (var i = 0; i<this.sizeX; i++){
+            state[i] = [];
+            for (var j = 0; j<this.sizeY; j++){
+                state[i][j] = false;
+            }
+        }
+        this.render(state);
+        this.state=state;
+    };
 
-    game = new Game(400, 200);
+    game = new Game(300, 300, 0);
 
     $('#makeTable').click(function () {
-        game.createTable(400, 200);
+        game.createTable();
     });
     $('#nextstate').click(function () {
-        setInterval(function () {
-            game.nextState();
-        }, 50);
+        game.start();
     });
-    /*
-     var gameDiv = $('#game');
+    $('#random').click(function () {
+        game.random();
+    });
+    $('#stop').click(function(){
+        game.stop();
+    });
+    $('#clear').click(function(){
+        game.clear();
+    });
 
-     function buildRow(i) {
-     gameDiv.append('<div class="row row' + i + '"></div>');
-     }
-
-     function buildTable(sizeX, sizeY) {
-     for (var i = 0; i < sizeY; i++) {
-     buildRow(i);
-     }
-     var rowCount = 0;
-     $('.row').each(function () {
-     var rowCells = '';
-     for (var j = 0; j < sizeX; j++) {
-     rowCells += '<div class="cell" id="c_' + j + '_' + rowCount + '"></div>';
-     }
-     $(this).append(rowCells);
-     rowCount++;
-     });
-
-
-     $('.cell').click(function () {
-     $(this).toggleClass('active');
-     });
-     }
-
-
-     function getStartState() {
-     var arr = [];
-     var row = $('.row');
-     var i = 0;
-     row.each(function () {
-     arr[i] = [];
-     var j = 0;
-
-     $(this).find('.cell').each(function () {
-     arr[i][j] = ($(this).hasClass('active'));
-     j++;
-     });
-     i++;
-     });
-     return arr;
-     }
-
-     function getNextState(now) {
-     var next = [];
-
-     for (var i = 0; i < now.length; i++) {
-     next[i] = [];
-     for (var j = 0; j < now[i].length; j++) {
-     var neighCount = 0;
-     for (var k = i - 1; k <= i + 1; k++) {
-     if (k >= 0 && k < now.length) {
-     for (var m = j - 1; m <= j + 1; m++) {
-     if (m >= 0 && m < now[k].length) {
-     if (now[k][m]) neighCount++;
-     }
-     }
-     }
-     }
-     if (now[i][j]) {
-     neighCount--;
-     next[i][j] = (neighCount == 3 || neighCount == 2);
-     } else {
-     next[i][j] = (neighCount == 3);
-     }
-     }
-     }
-     for (var x = 0; x < next.length; x++) {
-     for (var y = 0; y < next[x].length; y++) {
-     var cell = $('#c_' + y + '_' + x);
-     cell.removeClass('active');
-     if (next[x][y]) {
-     cell.addClass('active');
-     }
-     }
-     }
-     return next;
-     }
-
-
-     var play = true;
-
-     function startGame() {
-     var arr = getStartState();
-     step(arr);
-     function step(arr) {
-     var next = getNextState(arr);
-     setTimeout(function () {
-     step(next);
-     }, 50);
-     }
-     }
-
-     function makeRandom() {
-     $('.cell').each(function () {
-     if (Math.random() > .6) {
-     $(this).addClass('active');
-     }
-     })
-     }
-
-     */
-    /*$('#makeTable').click(function () {
-     buildTable(400, 200);
-     });*/
-    /*
-
-     $('#nextstate').click(startGame);
-     $('#random').click(makeRandom);
-     $('#stop').click(function () {
-     play = false;
-     });*/
 });
