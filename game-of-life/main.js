@@ -1,4 +1,4 @@
-$(function () {
+window.onload =function(){
     'use strict';
     var Game, game;
 
@@ -19,6 +19,7 @@ $(function () {
                 this.neght[i][j] = 1;
             }
         }
+        this.getList();
         var game = this;
         setInterval(function(){
             if(game.isGameGoing){
@@ -45,10 +46,11 @@ $(function () {
                     var x = arr[1];
                     var y = arr[2];
                     if(game.state[x][y]){
-                        this.classList.remove('a');
+                        this.style.backgroundColor = '#000';
+                        //this.removeAttribute('style'); // not sure what's faster
                         game.state[x][y] = false;
                     } else {
-                        this.classList.add('a');
+                        this.style.backgroundColor = '#fff';
                         game.state[x][y] = true;
                     }
                 };
@@ -91,9 +93,10 @@ $(function () {
                 if (next[x][y] != this.state[x][y]) {
                     this.isGameGoing = true;
                     if (next[x][y]) {
-                        this.objArr[x][y].classList.add('a');
+                        this.objArr[x][y].style.backgroundColor='#fff';
                     } else {
-                        this.objArr[x][y].classList.remove('a');
+                        this.objArr[x][y].style.backgroundColor='#000';
+                        //this.objArr[x][y].removeAttribute('style'); not sure what's faster
                     }
                 }
             }
@@ -104,11 +107,22 @@ $(function () {
         $.get('list.txt',function(data){
             data = data.substring(0, data.length - 1);
             var arr = data.split(',');
-            game.wrapper.append('<div class="list"'); /// stoped here
-            for(var elem in arr){
-
+            game.list = document.createElement('div');
+            game.list.className = 'list';
+            document.body.appendChild(game.list);
+            for(var i = 0; i<arr.length; i++){
+                game.addListElem(arr[i]);
             }
         });
+    };
+    Game.prototype.addListElem = function(text){
+        var elem = document.createElement('div');
+        elem.innerHTML = text;
+        elem.className = 'list__elem';
+        game.list.appendChild(elem);
+        elem.onclick = function(){
+            game.get(this.innerHTML);
+        }
     };
     Game.prototype.changeSize = function(x,y){
         this.sizeX = x;
@@ -124,7 +138,7 @@ $(function () {
             for (var j = 0; j < this.sizeY; j++) {
                 if (Math.random() > .7) {
                     this.state[i][j] = true;
-                    this.objArr[i][j].classList.add('a');
+                    this.objArr[i][j].style.backgroundColor='#fff';
                 }
             }
         }
@@ -147,26 +161,27 @@ $(function () {
         this.state=state;
     };
     Game.prototype.send = function(){
+        var game = this;
         if (!this.isTableSet) {alert('поле не задано')} else {
             var jsonString = JSON.stringify(this.state);
             var name = $('#name').val();
-            $.post('write.php', {name: name, arr: jsonString});
+            $.post('write.php', {name: name, arr: jsonString},function(data){
+                game.addListElem(data);
+            });
         }
     };
     Game.prototype.updateTable = function(x,y){
         game.changeSize(x,y);
         game.createTable();
     };
-    Game.prototype.get = function(){
+    Game.prototype.get = function(name){
         if (this.isTableSet) this.removeTable();
-        var name = $('#name').val();
         var game = this;
         $.post('read.php',{name: name},function(data){
             var state=JSON.parse(data);
             game.updateTable(state.length,state[0].length);
             game.render(state);
             game.state = state;
-
             game.stop();
         });
 
@@ -191,5 +206,4 @@ $(function () {
     game.addController("send","Сохранить состояние");
     game.addController("get","Загрузить по названию файла");
 
-
-});
+};

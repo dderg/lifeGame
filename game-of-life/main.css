@@ -5,15 +5,11 @@ body{
     float: left;
     height: 3px;
     width: 3px;
-    /*border-right: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;*/
 }
-.a{
-    background: white;
-}
-
-.r:after{
-    content: '';
-    display: block;
+.r{
     clear: both;
+}
+.list__elem{
+    color: white;
+    cursor: pointer;
 }

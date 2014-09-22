@@ -1,8 +1,10 @@
 <?
 $file = $_POST['name'].".txt";
+$name = $_POST['name'];
 $i = 0;
 while(file_exists($file)){
     $file = $_POST['name']."(".$i.").txt";
+    $name = $_POST['name']."(".$i.")";
     $i++;
 }
 
@@ -14,4 +16,6 @@ if( !is_file($file)) {
 
     fclose($fp); // закрываем файл
 }
+file_put_contents('list.txt',$name.',',FILE_APPEND);
+echo $name;
 ?>
