@@ -11,13 +11,6 @@ body{
 .a{
     background: white;
 }
-/*.row0 .cell{
-    border-top: 1px solid #ccc;
-}
-.cell:first-child{
-    border-left: 1px solid #ccc;
-}*/
-
 
 .r:after{
     content: '';
